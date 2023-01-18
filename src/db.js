@@ -3,13 +3,19 @@ const fs = require('fs');
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const {
-  DB_USER, DB_PASSWORD, DB_HOST,
+  DB_USER, DB_PASSWORD, DB_HOST, DB_DEPLOY
 } = process.env; // I had a problem trying to find the dotenv file, so i added a path to find it...
-console.log(`postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}/pokemon`)
-const sequelize = new Sequelize(`postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}/pokemon`, {
+
+// const sequelize = new Sequelize(`postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}/pokemon`, {
+//   logging: false, // set to console.log to see the raw SQL queries
+//   native: false, // lets Sequelize know we can use pg-native for ~30% more speed
+// });
+
+const sequelize = new Sequelize(DB_DEPLOY, {
   logging: false, // set to console.log to see the raw SQL queries
   native: false, // lets Sequelize know we can use pg-native for ~30% more speed
 });
+
 const basename = path.basename(__filename);
 
 const modelDefiners = [];
@@ -33,9 +39,9 @@ sequelize.models = Object.fromEntries(capsEntries);
 const { Pokemon, Type } = sequelize.models;
 
 // Here comes the relationships
-var PokemonTypes = sequelize.define('Pokemon_Types', {}, {timestamps: false})
-Type.belongsToMany(Pokemon, {through: PokemonTypes});
-Pokemon.belongsToMany(Type, {through: PokemonTypes});
+var PokemonTypes = sequelize.define('Pokemon_Types', {}, { timestamps: false })
+Type.belongsToMany(Pokemon, { through: PokemonTypes });
+Pokemon.belongsToMany(Type, { through: PokemonTypes });
 module.exports = {
   ...sequelize.models, // to be able to import the models like this: const { Product, User } = require('./db.js');
   conn: sequelize,     // to import the connection { conn } = require('./db.js');
